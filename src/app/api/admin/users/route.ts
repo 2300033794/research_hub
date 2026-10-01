@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { FilterQuery } from "mongoose";
+import type { QueryFilter } from "mongoose";
 import { dbConnect } from "@/lib/db";
 import { jsonError, jsonOk } from "@/lib/api-response";
 import { requireAdmin } from "@/lib/require-user";
@@ -18,9 +18,9 @@ export async function GET(request: NextRequest) {
   const params = request.nextUrl.searchParams;
   const q = params.get("q")?.trim() || "";
   const status = params.get("status") || "";
-  const filter: FilterQuery<UserDocument> = {};
+  const filter: QueryFilter<UserDocument> = {};
   if (status && ACCOUNT_STATUSES.includes(status as (typeof ACCOUNT_STATUSES)[number])) {
-    filter.accountStatus = status;
+    filter.accountStatus = status as (typeof ACCOUNT_STATUSES)[number];
   }
   if (q) {
     filter.$or = [

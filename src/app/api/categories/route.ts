@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { dbConnect } from "@/lib/db";
+import { dbConnect, hasMongoUri } from "@/lib/db";
 import { jsonError, jsonOk } from "@/lib/api-response";
 import { categorySchema } from "@/lib/validators";
 import { requireAdmin } from "@/lib/require-user";

@@ -2,8 +2,8 @@ import Link from "next/link";
 import { PaperFeed } from "@/components/papers/paper-feed";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
-import { fetchPapers } from "@/lib/app-url";
-import { dbConnect } from "@/lib/db";
+import { fetchPapers, queryString } from "@/lib/app-url";
+import { dbConnect, hasMongoUri } from "@/lib/db";
 import { Category } from "@/models/Category";
 import { cn } from "@/lib/utils";
 
@@ -13,8 +13,9 @@ export default async function HomePage({
   searchParams: Promise<Record<string, string | undefined>>;
 }) {
   const params = await searchParams;
-  await dbConnect();
-  const categories = await Category.find({ isActive: true }).sort({ name: 1 }).lean();
+  const categories = hasMongoUri()
+    ? (await dbConnect(), await Category.find({ isActive: true }).sort({ name: 1 }).lean())
+    : [];
   const data = await fetchPapers(params);
   const sort = params.sort || "latest";
 
@@ -49,6 +50,11 @@ export default async function HomePage({
           <p className="mt-2 max-w-2xl text-muted-foreground">
             Browse peer-shared PDFs, vote on impact, and leave methodology-focused comments. Posting is reserved for admin-approved researchers.
           </p>
+          {!hasMongoUri() ? (
+            <p className="mt-3 text-sm text-muted-foreground">
+              Set <code>MONGODB_URI</code> in <code>.env.local</code> and run <code>npm run seed</code> to load categories and an admin account.
+            </p>
+          ) : null}
         </div>
         <div className="flex flex-wrap gap-2">
           {[
@@ -59,7 +65,7 @@ export default async function HomePage({
           ].map(([value, label]) => (
             <Link
               key={value}
-              href={`/?${new URLSearchParams({ ...params, sort: value }).toString()}`}
+              href={`/?${queryString({ ...params, sort: value })}`}
               className={cn(buttonVariants({ variant: sort === value ? "default" : "outline", size: "sm" }))}
             >
               {label}
@@ -73,7 +79,7 @@ export default async function HomePage({
             {Array.from({ length: data.pages }).map((_, index) => (
               <Link
                 key={index}
-                href={`/?${new URLSearchParams({ ...params, page: String(index + 1) }).toString()}`}
+                href={`/?${queryString({ ...params, page: String(index + 1) })}`}
                 className={cn(buttonVariants({ variant: data.page === index + 1 ? "default" : "outline", size: "sm" }))}
               >
                 {index + 1}

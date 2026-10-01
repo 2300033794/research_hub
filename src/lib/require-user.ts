@@ -1,3 +1,4 @@
+import type { HydratedDocument } from "mongoose";
 import { auth } from "@/auth";
 import { dbConnect } from "@/lib/db";
 import { jsonError } from "@/lib/api-response";
@@ -5,8 +6,10 @@ import { canPostPaper, canUseCommunity, isAdmin } from "@/lib/permissions";
 import { User } from "@/models/User";
 import type { UserDocument } from "@/models/User";
 
+type AuthedUser = HydratedDocument<UserDocument>;
+
 export async function requireUser(): Promise<
-  { user: UserDocument } | { error: ReturnType<typeof jsonError> }
+  { user: AuthedUser } | { error: ReturnType<typeof jsonError> }
 > {
   const session = await auth();
   if (!session?.user?.id) {

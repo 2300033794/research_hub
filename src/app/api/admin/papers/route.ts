@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { FilterQuery } from "mongoose";
+import type { QueryFilter } from "mongoose";
 import { dbConnect } from "@/lib/db";
 import { jsonError, jsonOk } from "@/lib/api-response";
 import { requireAdmin } from "@/lib/require-user";
@@ -15,9 +15,9 @@ export async function GET(request: NextRequest) {
   const { page, limit, skip } = pagination(request, 20);
   const status = request.nextUrl.searchParams.get("status") || "";
   const q = request.nextUrl.searchParams.get("q")?.trim() || "";
-  const filter: FilterQuery<ResearchPaperDocument> = {};
+  const filter: QueryFilter<ResearchPaperDocument> = {};
   if (status && PAPER_STATUSES.includes(status as (typeof PAPER_STATUSES)[number])) {
-    filter.status = status;
+    filter.status = status as (typeof PAPER_STATUSES)[number];
   }
   if (q) {
     filter.$or = [{ title: new RegExp(q, "i") }, { authors: new RegExp(q, "i") }, { category: new RegExp(q, "i") }];

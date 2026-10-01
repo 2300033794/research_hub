@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
-import { FilterQuery } from "mongoose";
-import { dbConnect } from "@/lib/db";
+import type { QueryFilter } from "mongoose";
+import { dbConnect, hasMongoUri } from "@/lib/db";
 import { jsonError, jsonOk } from "@/lib/api-response";
 import { paperInputSchema } from "@/lib/validators";
 import { requirePoster } from "@/lib/require-user";
@@ -26,6 +26,7 @@ function csvOrJsonList(value: FormDataEntryValue | null) {
 }
 
 export async function GET(request: NextRequest) {
+  if (!hasMongoUri()) return jsonOk({ items: [], page: 1, pages: 1, total: 0 });
   await dbConnect();
   const { page, limit, skip } = pagination(request);
   const params = request.nextUrl.searchParams;
@@ -42,7 +43,7 @@ export async function GET(request: NextRequest) {
   const featured = params.get("featured");
   const uploadedBy = params.get("uploadedBy");
 
-  const filter: FilterQuery<ResearchPaperDocument> = { status: "APPROVED" };
+  const filter: QueryFilter<ResearchPaperDocument> = { status: "APPROVED" };
 
   if (category) filter.category = category;
   if (subcategory) filter.subcategory = subcategory;

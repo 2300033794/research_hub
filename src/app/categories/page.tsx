@@ -1,14 +1,15 @@
 import Link from "next/link";
 import { PageShell, PageTitle } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { dbConnect } from "@/lib/db";
+import { dbConnect, hasMongoUri } from "@/lib/db";
 import { Category } from "@/models/Category";
 
 export const metadata = { title: "Categories" };
 
 export default async function CategoriesPage() {
-  await dbConnect();
-  const categories = await Category.find({ isActive: true }).sort({ name: 1 }).lean();
+  const categories = hasMongoUri()
+    ? (await dbConnect(), await Category.find({ isActive: true }).sort({ name: 1 }).lean())
+    : [];
 
   return (
     <PageShell>

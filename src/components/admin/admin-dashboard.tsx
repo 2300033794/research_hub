@@ -38,6 +38,8 @@ export function AdminDashboard() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [q, setQ] = useState("");
   const [status, setStatus] = useState("");
+  const [appliedQ, setAppliedQ] = useState("");
+  const [appliedStatus, setAppliedStatus] = useState("");
   const [users, setUsers] = useState<Record<string, unknown>[]>([]);
   const [papers, setPapers] = useState<Record<string, unknown>[]>([]);
   const [comments, setComments] = useState<Record<string, unknown>[]>([]);
@@ -51,27 +53,27 @@ export function AdminDashboard() {
 
   const loadUsers = useCallback(async () => {
     const params = new URLSearchParams();
-    if (q) params.set("q", q);
-    if (status) params.set("status", status);
+    if (appliedQ) params.set("q", appliedQ);
+    if (appliedStatus) params.set("status", appliedStatus);
     const res = await fetch(`/api/admin/users?${params}`);
     const data = await res.json();
     setUsers(data.users || []);
-  }, [q, status]);
+  }, [appliedQ, appliedStatus]);
 
   const loadPapers = useCallback(async () => {
     const params = new URLSearchParams();
-    if (q) params.set("q", q);
-    if (status) params.set("status", status);
+    if (appliedQ) params.set("q", appliedQ);
+    if (appliedStatus) params.set("status", appliedStatus);
     const res = await fetch(`/api/admin/papers?${params}`);
     const data = await res.json();
     setPapers(data.items || []);
-  }, [q, status]);
+  }, [appliedQ, appliedStatus]);
 
   const loadComments = useCallback(async () => {
-    const res = await fetch(`/api/admin/comments${status === "hidden" ? "?hidden=true" : ""}`);
+    const res = await fetch(`/api/admin/comments${appliedStatus === "hidden" ? "?hidden=true" : ""}`);
     const data = await res.json();
     setComments(data.items || []);
-  }, [status]);
+  }, [appliedStatus]);
 
   const loadLogs = useCallback(async () => {
     const res = await fetch("/api/admin/logs");
@@ -200,16 +202,34 @@ export function AdminDashboard() {
         ))}
       </div>
 
-      {tab === "users" || tab === "papers" ? (
-        <div className="flex flex-wrap gap-2">
-          <Input value={q} onChange={(event) => setQ(event.target.value)} placeholder="Search" className="max-w-xs" />
+      {tab === "users" || tab === "papers" || tab === "comments" ? (
+        <form
+          className="flex flex-wrap gap-2"
+          onSubmit={(event) => {
+            event.preventDefault();
+            setAppliedQ(q);
+            setAppliedStatus(status);
+          }}
+        >
+          {tab !== "comments" ? (
+            <Input value={q} onChange={(event) => setQ(event.target.value)} placeholder="Search" className="max-w-xs" />
+          ) : null}
           <Input
             value={status}
             onChange={(event) => setStatus(event.target.value)}
-            placeholder={tab === "users" ? "PENDING, APPROVED..." : "PENDING_REVIEW, APPROVED..."}
+            placeholder={
+              tab === "users"
+                ? "PENDING, APPROVED..."
+                : tab === "comments"
+                  ? "hidden"
+                  : "PENDING_REVIEW, APPROVED..."
+            }
             className="max-w-xs"
           />
-        </div>
+          <Button type="submit" size="sm" variant="outline">
+            Apply
+          </Button>
+        </form>
       ) : null}
 
       {tab === "users" ? (
