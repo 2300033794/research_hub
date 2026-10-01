@@ -25,12 +25,13 @@ export type PaperCardData = {
 };
 
 export function PaperCard({ paper }: { paper: PaperCardData }) {
+  const id = String(paper._id);
   const poster =
     typeof paper.uploadedBy === "object" && paper.uploadedBy
       ? paper.uploadedBy.name
       : "Researcher";
   const posterId =
-    typeof paper.uploadedBy === "object" && paper.uploadedBy ? paper.uploadedBy._id : null;
+    typeof paper.uploadedBy === "object" && paper.uploadedBy ? String(paper.uploadedBy._id) : null;
 
   return (
     <Card className="overflow-hidden">
@@ -39,7 +40,7 @@ export function PaperCard({ paper }: { paper: PaperCardData }) {
           <Badge variant="secondary">{paper.category}</Badge>
           {paper.isFeatured ? <Badge>Featured</Badge> : null}
         </div>
-        <Link href={`/papers/${paper._id}`} className="font-heading text-xl font-semibold leading-tight hover:underline">
+        <Link href={`/papers/${id}`} className="font-heading text-xl font-semibold leading-tight hover:underline">
           {paper.title}
         </Link>
         <p className="text-sm text-muted-foreground">
@@ -66,7 +67,7 @@ export function PaperCard({ paper }: { paper: PaperCardData }) {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <VoteButtons
-              paperId={paper._id}
+              paperId={id}
               likeCount={paper.likeCount}
               dislikeCount={paper.dislikeCount}
             />
@@ -76,10 +77,10 @@ export function PaperCard({ paper }: { paper: PaperCardData }) {
             </span>
           </div>
           <div className="flex gap-2">
-            <Link href={`/papers/${paper._id}`} className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>
+            <Link href={`/papers/${id}`} className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>
               View comments
             </Link>
-            <Link href={`/papers/${paper._id}#pdf`} className={cn(buttonVariants({ size: "sm" }))}>
+            <Link href={`/papers/${id}#pdf`} className={cn(buttonVariants({ size: "sm" }))}>
               Read paper
             </Link>
           </div>

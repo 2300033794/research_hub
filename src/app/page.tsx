@@ -2,20 +2,10 @@ import Link from "next/link";
 import { PaperFeed } from "@/components/papers/paper-feed";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
+import { fetchPapers } from "@/lib/app-url";
 import { dbConnect } from "@/lib/db";
 import { Category } from "@/models/Category";
 import { cn } from "@/lib/utils";
-
-async function getPapers(searchParams: Record<string, string | undefined>) {
-  const query = new URLSearchParams();
-  for (const [key, value] of Object.entries(searchParams)) {
-    if (value) query.set(key, value);
-  }
-  const base = process.env.AUTH_URL || "http://localhost:3000";
-  const res = await fetch(`${base}/api/papers?${query.toString()}`, { cache: "no-store" });
-  if (!res.ok) return { items: [], page: 1, pages: 1, total: 0 };
-  return res.json();
-}
 
 export default async function HomePage({
   searchParams,
@@ -25,7 +15,7 @@ export default async function HomePage({
   const params = await searchParams;
   await dbConnect();
   const categories = await Category.find({ isActive: true }).sort({ name: 1 }).lean();
-  const data = await getPapers(params);
+  const data = await fetchPapers(params);
   const sort = params.sort || "latest";
 
   return (
@@ -76,7 +66,7 @@ export default async function HomePage({
             </Link>
           ))}
         </div>
-        {params.q ? <p className="text-sm text-muted-foreground">Results for “{params.q}”</p> : null}
+        {params.q ? <p className="text-sm text-muted-foreground">Results for &ldquo;{params.q}&rdquo;</p> : null}
         <PaperFeed papers={data.items || []} />
         {data.pages > 1 ? (
           <div className="flex justify-center gap-2">
